@@ -31,16 +31,33 @@ class Game():
         players = [self.p1, self.p2]
         pid = 0
         while True:
-            players[pid].render()
-            target = input('[p%s] coords to attack (eg. E4)>> ' % str(pid+1))
-            target = target.upper()
-            y = int(target[1])
-            x = ord(target[0]) - 65
+            if pid == 0:
+                # human
+                players[pid].render()
+                target = input('[p%s] coords to attack (eg. E4)>> ' % str(pid+1))
+                target = target.upper()
+                x = ord(target[0]) - 65
+                y = int(target[1])
+            else:
+                # robot
+                x = random.randint(0, 9)
+                y = random.randint(0, 9)
             hit = players[(pid+1) % 2].hit_check(x, y)
             if hit:
+                if pid == 0:
+                    print('HIT!')
                 players[pid].tracking_grid[x][y] = 'X'
             else:
+                if pid == 0:
+                    print('miss :(')
                 players[pid].tracking_grid[x][y] = 'o'
+            # win check
+            if players[0].is_destroyed():
+                print('you loose!')
+                break
+            if players[1].is_destroyed():
+                print('you win!')
+                break
             pid = (pid+1) % 2
 
         
@@ -89,13 +106,15 @@ class Player():
         for i, ship in enumerate(self.fleet):
             for j, coord in enumerate(ship.coords):
                 if coord == [x, y]:
-                    self.fleet[i].coords[j] = 1
+                    self.fleet[i].parts[j] = 1
                     self.player_grid[x][y] = 'X'
                     return True
         self.player_grid[x][y] = 'o'
         return False
+    
+    def is_destroyed(self):
+        return all([ship.is_destroyed() for ship in self.fleet])
         
-
 
 class Ship():
     def __init__(self, size, name, symbol):
@@ -130,6 +149,6 @@ class Ship():
             self.coords.append([x, y])
 
     def is_destroyed(self):
-        return sum(self.parts) == size
+        return sum(self.parts) == self.size
 
 
