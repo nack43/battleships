@@ -1,2 +1,2 @@
 # battleships
-battleships in pygame
+battleships
